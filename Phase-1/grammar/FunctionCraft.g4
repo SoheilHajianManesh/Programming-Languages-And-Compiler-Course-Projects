@@ -10,7 +10,7 @@ grammar FunctionCraft;
 // TODO
 
 program
-    : (function | COMMENT)* main
+    : (function | comment)* main
     ;
 
 main
@@ -19,14 +19,17 @@ main
     END
     ;
 
+
+
 function
-    : DEF IDENTIFIER LPAR parameter* RPAR
+    : DEF IDENTIFIER function_parameter
     function_body
     END
     ;
 
-parameter
-    :   IDENTIFIER (COMMA IDENTIFIER)*
+function_parameter
+    :
+        LPAR parameter? paramete_with_default_value? RPAR
     ;
 
 function_body
@@ -34,37 +37,132 @@ function_body
     ;
 
 statement
-    : (
+    : ((
     function_return
-    |function_call
-//    |assignment
-//    |initialization
-    )
-    SEMICOLON
-    ;
-function_return
-    :
-        RETURN
-        (IDENTIFIER  | value  | function_call| expr)
+    |expr
+    |assignment) SEMICOLON)
+    |if_block
+    |loop_do_block
+    |for_block
     ;
 
-function_call
-    :
-        IDENTIFIER
-        LPAR
-        argument
-        RPAR
+in_loop_statement
+    : ((
+    expr
+    |function_return
+    |assignment
+    |stop_control) SEMICOLON)
+    |in_loop_if_block
+    |loop_do_block
+    |for_block
     ;
 
 expr
     :
+    IDENTIFIER
+    | value
+    | function_call
+    | LPAR expr RPAR
+    | expr two_operand_operators expr
+    | IDENTIFIER postfix_operator
+    | prefix_operator expr
+    | lambda_function
+    | function_pointer
+    | 
+
     ;
 
-
-argument
+function_return
     :
-    (IDENTIFIER | value)
-    (COMMA (IDENTIFIER | value))*
+        RETURN expr?
+    ;
+
+function_call
+    :
+        (IDENTIFIER | lambda_function) LPAR function_argument? RPAR
+    ;
+
+lambda_function
+    :
+        LAMBDA_FUNCTION_SIGN function_parameter LBRACE function_body RBRACE
+    ;
+
+built_in_function_call
+    :
+        PUTS LPAR expr RPAR
+        | PUSH LPAR expr COMMA expr RPAR
+        | LEN LPAR expr RPAR
+        | CHOP LPAR expr RPAR
+        | CHOMP LPAR expr RPAR
+    ;
+
+assignment
+    :
+        IDENTIFIER ASSIGN expr
+    ;
+
+if_block
+    :
+        IF if_argument statement*
+        (ELSEIF if_argument statement*)*
+        (ELSE statement*)?
+        END
+    ;
+
+loop_do_block
+    :
+        LOOP DO in_loop_statement* END
+    ;
+
+for_block
+    :
+        FOR IDENTIFIER IN (range | expr) END
+    ;
+
+range
+    :
+    LPAR(expr DOT DOT expr)
+    ;
+
+in_loop_if_block
+    :
+        IF if_argument in_loop_statement*
+        (ELSEIF if_argument in_loop_statement*)*
+        (ELSE in_loop_statement*)?
+        END
+    ;
+
+type
+    :
+    INT
+    | STRING
+    | FLOAT
+    | BOOLEAN
+    | LIST
+    | FPTR
+    ;
+
+function_argument
+    :
+    expr (COMMA expr)*
+    ;
+
+function_pointer
+    :
+        METHOD LPAR COLON IDENTIFIER RPAR
+    ;
+
+parameter
+    :   IDENTIFIER (COMMA IDENTIFIER)*
+    ;
+
+paramete_with_default_value
+    :   LBRACKET IDENTIFIER ASSIGN value (COMMA IDENTIFIER ASSIGN value)* RBRACKET
+    ;
+
+if_argument
+    :
+        LPAR expr RPAR
     ;
 
 number
@@ -72,9 +170,53 @@ number
     |FLOAT_VAL
     ;
 
+pattern_matching
+    :
+    PATTERN IDENTIFIER LPAR parameter* paramete_with_default_value? RPAR
+    (PATTERN_INDENTATION if_argument ASSIGN expr)*
+    SEMICOLON
+    ;
+
+two_operand_operators
+    :
+    MULT
+    |DIV
+    |PLUS
+    |MINUS
+    ;
+
+postfix_operator
+    :
+    POSTFIX_MINUS
+    |POSTFIX_PLUS
+    ;
+
+prefix_operator
+    :
+    NEG
+    ;
+
+
 value
     :
-    BOOLEAN_VAL | STRING_VAL | number
+    BOOLEAN_VAL
+    | STRING_VAL
+    | number
+    ;
+
+logical_operator
+    :
+    NOT
+    | OR
+    | AND
+    ;
+
+stop_control
+    :
+    BREAK
+    | BREAK IF if_argument
+    | NEXT
+    | NEXT IF if_argument
     ;
 
 comment
@@ -139,9 +281,10 @@ GEQ:                '>=';
 LES:                 '<';
 GTR:                 '>';
 EQL:                '==';
-NEQ:               '!=';
+NEQ:                '!=';
 AND:                '&&';
 OR:                 '||';
+LOGICAL_OR:          '|';
 ASSIGN:              '=';
 INSERT:             '<<';
 LBRACE:              '{';
@@ -150,7 +293,9 @@ COMMA:               ',';
 DOT:                 '.';
 COLON:               ':';
 SEMICOLON:           ';';
+LAMBDA_FUNCTION_SIGN: '->';
 IDENTIFIER:    [a-z][a-zA-Z0-9_]*;
 SINGLE_LINE_COMMENT: '#' ~[\r\n]* -> skip;
 MULTI_LINE_COMMENT: '=begin'.*?'=end' -> skip;
+PATTERN_INDENTATION:    '\r\n\t|' | '\r\n    |';
 WS:                 [ \t\r\n]+ -> skip;
