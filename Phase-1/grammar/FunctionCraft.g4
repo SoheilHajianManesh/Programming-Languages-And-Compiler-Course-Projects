@@ -10,11 +10,11 @@ grammar FunctionCraft;
 // TODO
 
 program
-    : (function | comment)* main
+    : (function | pattern | comment)* main
     ;
 
 main
-    : DEF MAIN LPAR RPAR
+    : DEF MAIN LPAR RPAR {System.out.println("MAIN"); }
     function_body
     END
     ;
@@ -22,14 +22,15 @@ main
 
 
 function
-    : DEF IDENTIFIER function_parameter
+    : DEF name=IDENTIFIER {System.out.println("FuncDec: " + $name.text);} function_parameter
     function_body
     END
     ;
 
 function_parameter
     :
-        LPAR parameter? paramete_with_default_value? RPAR
+        LPAR parameter (COMMA paramete_with_default_value)? RPAR
+        | LPAR paramete_with_default_value? RPAR
     ;
 
 function_body
@@ -59,64 +60,124 @@ in_loop_statement
 
 expr
     :
-    IDENTIFIER
-    | value
-    | function_call
-    | LPAR expr RPAR
-    | expr two_operand_operators expr
-    | IDENTIFIER postfix_operator
-    | prefix_operator expr
-    | lambda_function
-    | function_pointer
-    | 
-
+        expr1 APPEND expr {System.out.println("Operator: <<"); }
+        | expr1
     ;
+
+expr1
+    :
+        expr2 name=equal_comparative_operators expr1 {System.out.println("Operator: " + $name.text);}
+        | expr2
+    ;
+
+expr2
+    :
+        expr3 name=comparative_operators expr2 {System.out.println("Operator: " + $name.text);}
+        | expr3
+    ;
+
+expr3
+    :
+        expr4 name=low_priority_mathematical_operators expr3 {System.out.println("Operator: " + $name.text);}
+        | expr4
+    ;
+
+expr4
+    :
+        expr5 name=high_priority_mathematical_operators expr4 {System.out.println("Operator: " + $name.text);}
+        | expr5
+    ;
+
+expr5
+    :
+        name=prefix_operator expr6 {System.out.println("Operator: " + $name.text);}
+        | expr6
+    ;
+
+expr6
+    :
+        expr6 LBRACKET expr6 RBRACKET //remove left recursion
+        | expr7
+    ;
+
+expr7
+    :
+        IDENTIFIER
+        | value
+        | list_value
+        | expr7 LPAR {System.out.println("Function Call"); } function_argument? RPAR //remove left recursion
+        | built_in_function_call
+        | pattern_call
+        | LPAR expr RPAR
+        | postfix_operation
+        | function_pointer
+        | logical_operation
+    ;
+
+//expr
+//    :
+//    IDENTIFIER
+//    | value
+//    | list_value
+//    | expr LPAR {System.out.println("Function Call"); } function_argument? RPAR
+//    | built_in_function_call
+//    | pattern_call
+//    | LPAR expr RPAR
+//    | expr name=mathematical_operators {System.out.println("Operator: " + $name.text);} expr
+//    | expr name1=comparative_operators {System.out.println("Operator: " + $name1.text);} expr
+//    | logical_operation
+//    | postfix_operation
+//    | prefix_operation
+//    | function_pointer
+//    | expr APPEND {System.out.println("Operator: <<"); } expr
+//    | expr LBRACKET expr RBRACKET
+//    ;
 
 function_return
     :
-        RETURN expr?
+        RETURN {System.out.println("RETURN");} expr?
     ;
 
-function_call
+pattern_call
     :
-        (IDENTIFIER | lambda_function) LPAR function_argument? RPAR
+        IDENTIFIER DOT MATCH {System.out.println("Built-In: MATCH");} LPAR expr RPAR
     ;
 
 lambda_function
     :
-        LAMBDA_FUNCTION_SIGN function_parameter LBRACE function_body RBRACE
+        LAMBDA_FUNCTION_SIGN {System.out.println("Structure: LAMBDA");} function_parameter LBRACE function_body RBRACE
     ;
 
 built_in_function_call
     :
-        PUTS LPAR expr RPAR
-        | PUSH LPAR expr COMMA expr RPAR
-        | LEN LPAR expr RPAR
-        | CHOP LPAR expr RPAR
-        | CHOMP LPAR expr RPAR
+        PUTS {System.out.println("Built-In: PUTS");} LPAR expr RPAR
+        | PUSH {System.out.println("Built-In: PUSH");} LPAR expr COMMA expr RPAR
+        | LEN {System.out.println("Built-In: LEN");} LPAR expr RPAR
+        | CHOP {System.out.println("Built-In: CHOP");} LPAR expr RPAR
+        | CHOMP {System.out.println("Built-In: CHOMP");} LPAR expr RPAR
     ;
 
 assignment
     :
-        IDENTIFIER ASSIGN expr
+        name=IDENTIFIER {System.out.println("Assignment: " + $name.text);} (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULT_ASSIGN | DIV_ASSIGN | REM_ASSIGN)  expr
     ;
 
 if_block
     :
-        IF if_argument statement*
-        (ELSEIF if_argument statement*)*
-        (ELSE statement*)?
+        IF {System.out.println("Decision: IF");} if_argument statement*
+        (ELSEIF {System.out.println("Decision: ELSE IF");} if_argument statement*)*
+        (ELSE {System.out.println("Decision: ELSE");} statement*)?
         END
     ;
 
 loop_do_block
     :
-        LOOP DO in_loop_statement* END
+        LOOP DO {System.out.println("Loop: DO");} in_loop_statement* END
     ;
 
 for_block
     :
-        FOR IDENTIFIER IN (range | expr) END
+        FOR IDENTIFIER {System.out.println("Loop: FOR");} IN (range | expr) END
     ;
 
 range
@@ -126,30 +187,21 @@ range
 
 in_loop_if_block
     :
-        IF if_argument in_loop_statement*
-        (ELSEIF if_argument in_loop_statement*)*
-        (ELSE in_loop_statement*)?
+        IF {System.out.println("Decision: IF");} if_argument in_loop_statement*
+        (ELSEIF {System.out.println("Decision: ELSE IF");} if_argument in_loop_statement*)*
+        (ELSE {System.out.println("Decision: ELSE");} in_loop_statement*)?
         END
-    ;
-
-type
-    :
-    INT
-    | STRING
-    | FLOAT
-    | BOOLEAN
-    | LIST
-    | FPTR
     ;
 
 function_argument
     :
-    expr (COMMA expr)*
+        expr (COMMA expr)*
     ;
 
 function_pointer
     :
-        METHOD LPAR COLON IDENTIFIER RPAR
+        FPTR
+        | lambda_function
     ;
 
 parameter
@@ -160,29 +212,74 @@ paramete_with_default_value
     :   LBRACKET IDENTIFIER ASSIGN value (COMMA IDENTIFIER ASSIGN value)* RBRACKET
     ;
 
+logical_operation
+    :
+        LPAR expr RPAR name=two_operand_logical_operator {System.out.println("Operator: " + $name.text);} LPAR expr RPAR
+        | NOT {System.out.println("Operator: !");} LPAR expr RPAR
+    ;
+
+postfix_operation
+    :
+        IDENTIFIER name=postfix_operator {System.out.println("Operator: " + $name.text);}
+    ;
+
+//prefix_operation
+//    :
+//        name=prefix_operator {System.out.println("Operator: " + $name.text);} expr
+//    ;
+
 if_argument
     :
         LPAR expr RPAR
     ;
 
 number
-    : INT_VAL
+    : MINUS?
+    (
+    INT_VAL
     |FLOAT_VAL
+    )
     ;
 
-pattern_matching
+pattern
     :
-    PATTERN IDENTIFIER LPAR parameter* paramete_with_default_value? RPAR
+    PATTERN name = IDENTIFIER {System.out.println("PatternDec: " + $name.text);}
+    LPAR parameter* paramete_with_default_value? RPAR
     (PATTERN_INDENTATION if_argument ASSIGN expr)*
     SEMICOLON
     ;
 
-two_operand_operators
+high_priority_mathematical_operators
     :
     MULT
     |DIV
-    |PLUS
+    |REM
+    ;
+
+low_priority_mathematical_operators
+    :
+    PLUS
     |MINUS
+    ;
+
+equal_comparative_operators
+    :
+        EQL
+        | NEQ
+    ;
+
+comparative_operators
+    :
+        LEQ
+        | GEQ
+        | LES
+        | GTR
+    ;
+
+two_operand_logical_operator
+    :
+        AND
+        | OR
     ;
 
 postfix_operator
@@ -193,7 +290,7 @@ postfix_operator
 
 prefix_operator
     :
-    NEG
+    MINUS
     ;
 
 
@@ -204,23 +301,22 @@ value
     | number
     ;
 
-logical_operator
+list_value
     :
-    NOT
-    | OR
-    | AND
+        LBRACKET (expr (COMMA expr)*)? RBRACKET
     ;
 
 stop_control
     :
-    BREAK
-    | BREAK IF if_argument
-    | NEXT
-    | NEXT IF if_argument
+    BREAK {System.out.println("Control: BREAK");}
+    | BREAK IF {System.out.println("Control: BREAK");} if_argument
+    | NEXT {System.out.println("Control: NEXT");}
+    | NEXT IF {System.out.println("Control: NEXT");} if_argument
     ;
 
 comment
-    :    SINGLE_LINE_COMMENT|
+    :
+    SINGLE_LINE_COMMENT|
     MULTI_LINE_COMMENT
     ;
 
@@ -271,11 +367,13 @@ RBRACKET:            ']';
 POSTFIX_PLUS:       '++';
 POSTFIX_MINUS:      '--';
 NOT:                 '!';
-NEG:                 '-';
+//NEG:                 '-';
 MULT:                '*';
 DIV:                 '/';
+REM:                 '%';
 PLUS:                '+';
 MINUS:               '-';
+APPEND:             '<<';
 LEQ:                '<=';
 GEQ:                '>=';
 LES:                 '<';
@@ -286,7 +384,11 @@ AND:                '&&';
 OR:                 '||';
 LOGICAL_OR:          '|';
 ASSIGN:              '=';
-INSERT:             '<<';
+PLUS_ASSIGN:        '+=';
+MINUS_ASSIGN:       '-=';
+MULT_ASSIGN:        '*=';
+DIV_ASSIGN:         '/=';
+REM_ASSIGN:         '%=';
 LBRACE:              '{';
 RBRACE:              '}';
 COMMA:               ',';
