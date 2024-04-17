@@ -60,32 +60,57 @@ in_loop_statement
 
 expr
     :
-        expr1 APPEND expr {System.out.println("Operator: <<"); }
-        | expr1
+
+        expr1 expr_utils
     ;
 
+expr_utils
+    :
+        APPEND expr1 expr_utils{System.out.println("Operator: <<"); }
+        |
+    ;
 expr1
     :
-        expr2 name=equal_comparative_operators expr1 {System.out.println("Operator: " + $name.text);}
-        | expr2
+        expr2 expr1_utils
+    ;
+
+expr1_utils
+    :
+        name=equal_comparative_operators expr2 expr1_utils{System.out.println("Operator: " + $name.text);}
+        |
     ;
 
 expr2
     :
-        expr3 name=comparative_operators expr2 {System.out.println("Operator: " + $name.text);}
-        | expr3
+        expr3 expr2_utils
+    ;
+
+expr2_utils
+    :
+        name=comparative_operators expr3  expr2_utils{System.out.println("Operator: " + $name.text);}
+        |
     ;
 
 expr3
     :
-        expr4 name=low_priority_mathematical_operators expr3 {System.out.println("Operator: " + $name.text);}
-        | expr4
+        expr4 expr3_utils
+    ;
+
+expr3_utils
+    :
+         name=low_priority_mathematical_operators expr4 expr3_utils{System.out.println("Operator: " + $name.text);}
+        |
     ;
 
 expr4
     :
-        expr5 name=high_priority_mathematical_operators expr4 {System.out.println("Operator: " + $name.text);}
-        | expr5
+        expr5 expr4_utils
+    ;
+
+expr4_utils
+    :
+         name=high_priority_mathematical_operators {System.out.println("Operator: " + $name.text);} expr5 expr4_utils
+         |
     ;
 
 expr5
@@ -96,7 +121,6 @@ expr5
 
 expr6
     :
-//        expr6 LBRACKET expr6 RBRACKET //remove left recursion
          expr7 expr6_utils
     ;
 
