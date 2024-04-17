@@ -96,22 +96,35 @@ expr5
 
 expr6
     :
-        expr6 LBRACKET expr6 RBRACKET //remove left recursion
-        | expr7
+//        expr6 LBRACKET expr6 RBRACKET //remove left recursion
+         expr7 expr6_utils
+    ;
+
+expr6_utils
+    :
+        LBRACKET expr6 RBRACKET expr6_utils
+        | //remove left recursion
+
     ;
 
 expr7
     :
-        IDENTIFIER
-        | value
-        | list_value
-        | expr7 LPAR {System.out.println("Function Call"); } function_argument? RPAR //remove left recursion
-        | built_in_function_call
-        | pattern_call
-        | LPAR expr RPAR
-        | postfix_operation
-        | function_pointer
-        | logical_operation
+        IDENTIFIER expr7_utils
+        | value expr7_utils
+        | list_value expr7_utils
+//        | expr7 LPAR {System.out.println("Function Call"); } function_argument? RPAR //remove left recursion
+        | built_in_function_call expr7_utils
+        | pattern_call expr7_utils
+        | LPAR expr RPAR expr7_utils
+        | postfix_operation expr7_utils
+        | function_pointer expr7_utils
+        | logical_operation expr7_utils
+    ;
+
+expr7_utils
+    :
+    LPAR {System.out.println("Function Call"); } function_argument? RPAR expr7_utils
+    |
     ;
 
 //expr
@@ -159,7 +172,7 @@ built_in_function_call
 
 assignment
     :
-        name=IDENTIFIER {System.out.println("Assignment: " + $name.text);} (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULT_ASSIGN | DIV_ASSIGN | REM_ASSIGN)  expr
+        name=IDENTIFIER  (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULT_ASSIGN | DIV_ASSIGN | REM_ASSIGN)  expr {System.out.println("Assignment: " + $name.text);}
     ;
 
 if_block
