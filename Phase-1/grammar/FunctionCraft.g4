@@ -60,13 +60,12 @@ in_loop_statement
 
 expr
     :
-
         expr1 expr_utils
     ;
 
 expr_utils
     :
-        APPEND expr1 expr_utils{System.out.println("Operator: <<"); }
+        APPEND expr1 {System.out.println("Operator: <<"); } expr_utils
         |
     ;
 expr1
@@ -76,7 +75,7 @@ expr1
 
 expr1_utils
     :
-        name=equal_comparative_operators expr2 expr1_utils{System.out.println("Operator: " + $name.text);}
+        name=equal_comparative_operators expr2 {System.out.println("Operator: " + $name.text);} expr1_utils
         |
     ;
 
@@ -87,7 +86,7 @@ expr2
 
 expr2_utils
     :
-        name=comparative_operators expr3  expr2_utils{System.out.println("Operator: " + $name.text);}
+        name=comparative_operators expr3 {System.out.println("Operator: " + $name.text);} expr2_utils
         |
     ;
 
@@ -98,7 +97,7 @@ expr3
 
 expr3_utils
     :
-         name=low_priority_mathematical_operators expr4 expr3_utils{System.out.println("Operator: " + $name.text);}
+         name=low_priority_mathematical_operators expr4 {System.out.println("Operator: " + $name.text);} expr3_utils
         |
     ;
 
@@ -109,7 +108,7 @@ expr4
 
 expr4_utils
     :
-         name=high_priority_mathematical_operators {System.out.println("Operator: " + $name.text);} expr5 expr4_utils
+         name=high_priority_mathematical_operators expr5 {System.out.println("Operator: " + $name.text);} expr4_utils
          |
     ;
 
@@ -127,7 +126,7 @@ expr6
 expr6_utils
     :
         LBRACKET expr6 RBRACKET expr6_utils
-        | //remove left recursion
+        |
 
     ;
 
@@ -136,7 +135,6 @@ expr7
         IDENTIFIER expr7_utils
         | value expr7_utils
         | list_value expr7_utils
-//        | expr7 LPAR {System.out.println("Function Call"); } function_argument? RPAR //remove left recursion
         | built_in_function_call expr7_utils
         | pattern_call expr7_utils
         | LPAR expr RPAR expr7_utils
@@ -150,25 +148,6 @@ expr7_utils
     LPAR {System.out.println("Function Call"); } function_argument? RPAR expr7_utils
     |
     ;
-
-//expr
-//    :
-//    IDENTIFIER
-//    | value
-//    | list_value
-//    | expr LPAR {System.out.println("Function Call"); } function_argument? RPAR
-//    | built_in_function_call
-//    | pattern_call
-//    | LPAR expr RPAR
-//    | expr name=mathematical_operators {System.out.println("Operator: " + $name.text);} expr
-//    | expr name1=comparative_operators {System.out.println("Operator: " + $name1.text);} expr
-//    | logical_operation
-//    | postfix_operation
-//    | prefix_operation
-//    | function_pointer
-//    | expr APPEND {System.out.println("Operator: <<"); } expr
-//    | expr LBRACKET expr RBRACKET
-//    ;
 
 function_return
     :
@@ -196,7 +175,7 @@ built_in_function_call
 
 assignment
     :
-        name=IDENTIFIER  (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULT_ASSIGN | DIV_ASSIGN | REM_ASSIGN)  expr {System.out.println("Assignment: " + $name.text);}
+        name=IDENTIFIER {System.out.println("Assignment: " + $name.text);} (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULT_ASSIGN | DIV_ASSIGN | REM_ASSIGN)  expr
     ;
 
 if_block
@@ -259,11 +238,6 @@ postfix_operation
     :
         IDENTIFIER name=postfix_operator {System.out.println("Operator: " + $name.text);}
     ;
-
-//prefix_operation
-//    :
-//        name=prefix_operator {System.out.println("Operator: " + $name.text);} expr
-//    ;
 
 if_argument
     :
@@ -385,17 +359,12 @@ LOOP:             'loop';
 DO:                 'do';
 FOR:               'for';
 IN:                 'in';
-INT:               'int';
 INT_VAL:     [1-9][0-9]* | [0];
-FLOAT:           'float';
 FLOAT_VAL: [0-9]*'.'[0-9]+ | INT_VAL;
-STRING:         'string';
 STRING_VAL:    '"'.*?'"';
-BOOLEAN:       'boolean';
 BOOLEAN_VAL:   TRUE|FALSE;
 TRUE:             'true';
 FALSE:           'false';
-LIST:             'list';
 FPTR:           METHOD'(:'IDENTIFIER')';
 LPAR:                '(';
 RPAR:                ')';
@@ -404,7 +373,6 @@ RBRACKET:            ']';
 POSTFIX_PLUS:       '++';
 POSTFIX_MINUS:      '--';
 NOT:                 '!';
-//NEG:                 '-';
 MULT:                '*';
 DIV:                 '/';
 REM:                 '%';
