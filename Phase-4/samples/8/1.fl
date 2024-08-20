@@ -1,0 +1,16 @@
+def f(a)
+    if(-a <= 10)
+        puts(200);
+    end
+end
+
+def g(a)
+    if(!a)
+        puts(300);
+    end
+end
+
+def main() 
+    f(20);
+    g(false);
+end

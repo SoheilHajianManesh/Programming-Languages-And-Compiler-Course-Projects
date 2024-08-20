@@ -1,0 +1,7 @@
+def main()
+    l = [12 , 13 , 14 , 15];
+    l2 = ["a" , "b" , "c"];
+    ind = 2;
+    puts(l[ind]);
+    puts(l2[1]);
+end

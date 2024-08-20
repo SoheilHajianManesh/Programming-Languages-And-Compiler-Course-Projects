@@ -1,0 +1,14 @@
+def main()
+    a = [3, 10, 2, 7, 100034];
+    puts("list length : ");
+    puts(len(a));
+    i = 0;
+    puts("list a :");
+    loop do
+        if (i >= len(a))
+            break;
+        end
+        puts(a[i]);
+        ++i;
+    end
+end

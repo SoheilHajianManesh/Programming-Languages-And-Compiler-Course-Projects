@@ -1,0 +1,11 @@
+def f(a, b , [c = 10 , e = 30])
+    k = a + b * c - e;
+    puts(k);
+    return k;
+end
+
+def main() 
+    if(f(10 , 10) == 80)
+        puts("nice");
+    end
+end

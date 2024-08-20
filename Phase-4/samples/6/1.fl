@@ -1,0 +1,10 @@
+def main()
+    a = 10;
+    b = true;
+    a /= 2;
+    puts(a);
+    c = b;
+    puts(c);
+    a %= 5;
+    puts(a);
+end

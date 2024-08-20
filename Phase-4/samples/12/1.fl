@@ -1,0 +1,15 @@
+def main()
+    a = 10;
+    b = 15;
+    loop do
+        if(a == 13)
+            puts("oo");
+            break;
+        end
+        if (a < b)
+            puts(a);
+            ++a;
+            next;
+        end
+    end
+end

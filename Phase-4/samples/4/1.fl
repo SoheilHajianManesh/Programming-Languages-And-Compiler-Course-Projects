@@ -1,0 +1,17 @@
+def f(a, b , c)
+    if (a > b)
+        if (c < a)
+            return "salam";
+        end
+    else
+        return "hi";
+    end
+    return "gg";
+end
+
+def main() 
+    str1 = f(20 , 10 , 15);
+    str2 = f(10 , 20 , 30);
+    puts(str1);
+    puts(str2);
+end

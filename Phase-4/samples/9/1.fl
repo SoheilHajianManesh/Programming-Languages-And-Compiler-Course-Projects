@@ -1,0 +1,11 @@
+def f()
+    return "eee";
+end
+
+def g()
+    return f();
+end
+
+def main() 
+    puts(g());
+end

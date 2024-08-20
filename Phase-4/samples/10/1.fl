@@ -1,0 +1,11 @@
+def main()
+    a = 10;
+    b = a - 5;
+    c = b + a;
+    d = c / 3;
+    puts(d);
+    puts(d <= 100);
+    if(c != a)
+        puts("yyy");
+    end
+end
